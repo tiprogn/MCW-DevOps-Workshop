@@ -2,6 +2,17 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "environment": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of environment"
+            },
+            "allowedValues": [
+                "dev",
+                "test",
+                "production"
+            ]
+        },
         "siteName": {
             "type": "string",
             "defaultValue": "tailspintoys",
@@ -144,6 +155,20 @@
             "resources": [
                 {
                     "apiVersion": "2016-08-01",
+                    "name": "staging",
+                    "type": "slots",
+                    "tags": {
+                        "displayName": "Deployment Slot: staging"
+                    },
+                    "location": "[resourceGroup().location]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites/', variables('webAppName'))]"
+                    ],
+                    "properties": {},
+                    "resources": []
+                },
+                {
+                    "apiVersion": "2016-08-01",
                     "name": "connectionstrings",
                     "type": "config",
                     "dependsOn": [
@@ -205,4 +230,4 @@
             ]
         }
     ]
-}
+}  
