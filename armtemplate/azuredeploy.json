@@ -128,11 +128,13 @@
             "name": "[variables('hostingPlanName')]",
             "type": "Microsoft.Web/serverfarms",
             "location": "[parameters('location')]",
+            "kind":  "linux",
             "properties": {
                 "name": "[variables('hostingPlanName')]",
                 "workerSize": "1",
                 "hostingEnvironment": "",
-                "numberOfWorkers": 0
+                "numberOfWorkers": 0,
+                "reserved": true
             },
             "sku": {
                 "Tier": "Standard",
@@ -140,10 +142,11 @@
             }
         },
         {
-            "apiVersion": "2016-08-01",
+            "apiVersion": "2018-11-01",
             "name": "[variables('webAppName')]",
             "type": "Microsoft.Web/sites",
             "location": "[parameters('location')]",
+            "kind": "app,linux,container",
             "dependsOn": [
                 "[concat('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
             ],
@@ -179,6 +182,29 @@
                             "value": "[concat('Database=', variables('databaseName'), ';Server=', reference(resourceId('Microsoft.DBforPostgreSQL/servers',variables('serverName'))).fullyQualifiedDomainName, ';User Id=', parameters('administratorLogin'),'@', variables('serverName'),';Password=', parameters('administratorLoginPassword'))]",
                             "type": "PostgreSQL"
                         }
+                    }
+                },
+                {
+                    "type": "Microsoft.Web/sites/config",
+                    "apiVersion": "2018-11-01",
+                    "name": "[concat(variables('webAppName'), '/web')]",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/sites', variables('webAppName'))]"
+                    ],
+                    "properties": {
+                        "numberOfWorkers": 1,
+                        "defaultDocuments": [
+                            "Default.htm",
+                            "Default.html",
+                            "Default.asp",
+                            "index.htm",
+                            "index.html",
+                            "iisstart.htm",
+                            "default.aspx",
+                            "index.php",
+                            "hostingstart.html"
+                        ]
                     }
                 }
             ]
@@ -229,5 +255,11 @@
                 }
             ]
         }
-    ]
+    ],
+    "outputs": {
+    "webappname": {
+      "type": "string",
+      "value": "[variables('webAppName')]"
+    }
+  }
 }  
